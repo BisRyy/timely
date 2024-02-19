@@ -1,0 +1,209 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  labels        Label[]
+  activities    Activity[]
+  favoriteBoards Board[] @relation("favorites")
+  memberBoards  BoardMember[]
+  assignedTasks Task[] @relation("AssignedToRelation")
+  createdTasks  Task[] @relation("CreatedByRelation")
+  sentInvitations Invitation[] @relation("UserToInvitation")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum Role {
+  member
+  owner
+}
+
+model BoardMember {
+  userId    String
+  boardId   String
+  role      Role
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@id([userId, boardId])
+}
+
+model Board {
+  id            String         @id @default(cuid())
+  title         String
+  backgroundUrl String?
+  columns       Column[]
+  labels        Label[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activities    Activity[]
+  favoritedBy User[] @relation("favorites")
+  members       BoardMember[]
+  invitations Invitation[]
+}
+
+model Column {
+  id         String    @id @default(cuid())
+  title      String
+  boardId    String
+  board      Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+  order      Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  activitiesAsOldColumn Activity[] @relation("OldColumn")
+  activitiesAsNewColumn Activity[] @relation("NewColumn")
+  activitiesAsOriginalColumn Activity[] @relation("OriginalColumn")
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  startDate   DateTime?
+  columnId    String
+  column      Column       @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  labels      Label[]
+  checklists  Checklist[]
+  order       Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  activities  Activity[]
+  assignedToId String?
+  assignedTo User? @relation("AssignedToRelation", fields: [assignedToId], references: [id])
+  createdByUserId String
+  createdBy User @relation("CreatedByRelation", fields: [createdByUserId], references: [id], onDelete: Cascade)
+}
+
+model Invitation {
+  id         String   @id @default(cuid())
+  boardId    String
+  email      String
+  token      String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  board      Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  inviterId  String
+  inviter    User @relation(name: "UserToInvitation", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, email])
+}
+
+model Label {
+  id        String  @id @default(cuid())
+  title     String?
+  color     String
+  isDefault Boolean @default(false)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  boardId   String
+  board     Board   @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+}
+
+model Checklist {
+  id        String           @id @default(cuid())
+  title     String?
+  taskId    String
+  task      Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  items     ChecklistItem[]
+}
+
+model ChecklistItem {
+  id          String     @id @default(cuid())
+  content     String
+  isChecked   Boolean    @default(false)
+  checklistId String
+  checklist   Checklist  @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+}
+
+model Activity {
+  id             String        @id @default(cuid())
+  type           ActivityType
+  content        String?
+  createdAt      DateTime      @default(now())
+  startDate      DateTime?
+  dueDate        DateTime?
+  userId         String
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId         String?
+  task           Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  boardId        String?
+  board          Board?        @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  oldColumnId    String?
+  oldColumn      Column?       @relation("OldColumn", fields: [oldColumnId], references: [id])
+  newColumnId    String?
+  newColumn      Column?       @relation("NewColumn", fields: [newColumnId], references: [id])
+  originalColumnId String?
+  originalColumn Column?       @relation("OriginalColumn", fields: [originalColumnId], references: [id])
+}
+
+
+enum ActivityType {
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_MOVED
+  TASK_DELETED
+  COMMENT_ADDED
+  BOARD_UPDATED
+  START_DATE_ADDED
+  START_DATE_UPDATED
+  START_DATE_REMOVED
+  DUE_DATE_ADDED
+  DUE_DATE_UPDATED
+  DUE_DATE_REMOVED
+}
