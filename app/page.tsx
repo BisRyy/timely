@@ -31,23 +31,23 @@ export default function Home() {
   return (
     <main className="min-h-dvh text-white bg-gradient-to-br from-black to-zinc-900 dark">
       <nav className="px-3 md:px-10 py-3 mb-5 flex justify-between items-center">
-        <h4 className="flex items-center text-lg gap-3 font-semibold tracking-tight"><IconLayoutKanban className="text-purple-500" /> NextBoard</h4>
-        <Link href='https://github.com/greengem/nextjs-kanban'><IconBrandGithub /></Link>
+        <h4 className="flex items-center text-lg gap-3 font-semibold tracking-tight"><IconLayoutKanban className="text-purple-500" /> Timely</h4>
+        <Link href='https://github.com/bisryy/task'><IconBrandGithub /></Link>
       </nav>
 
       <section className="mb-10 py-5 px-3 md:px-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div className="flex flex-col justify-center">
             <h4 className="text-lg font-semibold mb-5 text-zinc-500 flex items-center gap-1">Project Management</h4>
-            <h1 className="text-4xl md:text-6xl xl:text-8xl tracking-tighter font-bold mb-5">Plan, Track, and <span className="from-[#FF1CF7] to-[#b249f8] bg-clip-text text-transparent bg-gradient-to-b">Achieve</span></h1>
-            <p className="text-lg text-zinc-500 mb-5">The perfect <strong>solution</strong> to all of your task management needs, <span className="text-purple-500">powered by AI</span></p>
+            <h1 className="text-4xl md:text-5xl xl:text-6xl tracking-tighter font-bold mb-5">Plan, Track, Assign and <span className="from-[#FF1CF7] to-[#b249f8] bg-clip-text text-transparent bg-gradient-to-b xl:text-7xl">Achieve</span> with Timely.</h1>
+            <p className="text-lg text-zinc-500 mb-5">The <span className="text-purple-500">perfect <strong>solution</strong> </span>to all of your task management need.</p>
             <div className="flex gap-5">
               <Button color="secondary"  as={Link} href="/board"><IconRocket />Get Started</Button>
               <Button as={Link} href="/board"><IconBook />Docs</Button>
             </div>
           </div>
           <div className="hidden lg:block">
-            <Image src="/ss.webp" alt="Screenshot of NextBoard" width={2000} height={1250} className="w-full h-auto rounded-xl shadow-xl" />
+            <Image src="/ss.webp" alt="Screenshot of Timely" width={2000} height={1250} className="w-full h-auto rounded-xl shadow-xl" />
           </div>
         </div>
       </section>
