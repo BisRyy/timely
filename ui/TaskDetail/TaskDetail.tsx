@@ -114,6 +114,14 @@ export default async function TaskDetail({ taskId }: { taskId: string }) {
             }
           },
         }
+      },
+      assignedTo: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          email: true
+        },
       }
     }
   });

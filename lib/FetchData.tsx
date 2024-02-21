@@ -16,3 +16,17 @@ export async function getLabelsForBoard(boardId: string) {
 
     return labels;
 }
+
+// Fetch users
+export async function getMembersForBoard(boardId: string) {
+    const users = await prisma.boardMember.findMany({
+        where: {
+            boardId: boardId,
+        },
+        include: {
+            user: true,
+        },
+    });
+
+    return users;
+}

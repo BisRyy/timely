@@ -1,10 +1,12 @@
 import { ExpandedTask } from '@/types/types';
-import { getLabelsForBoard } from "@/lib/FetchData";
+import { getLabelsForBoard, getMembersForBoard } from "@/lib/FetchData";
 import AddToCardLabels from "./Labels/AddToCardLabels";
 import AddToCardDates from "./Dates/AddToCardDates";
 import AddChecklist from "./Checklist/AddChecklist";
+import AssignTask from './Assign/AssignTask';
 
 export default async function TaskDetailAddToCard({ task } : { task: ExpandedTask }) {
+    const members = await getMembersForBoard(task?.column.boardId);
     const labels = await getLabelsForBoard(task?.column.boardId);
 
     return (
@@ -12,6 +14,7 @@ export default async function TaskDetailAddToCard({ task } : { task: ExpandedTas
             <h4 className='text-sm text-zinc-700 font-semibold mb-1'>Add to card</h4>
             <ul className='text-sm space-y-2'>
                 {/*<li className='flex items-center gap-2 bg-zinc-800 px-2 py-2 rounded-md'><IconUser size={14} /> Members</li>*/}
+                <AssignTask task={task} members={members} />
                 <AddToCardLabels labels={labels} task={task} boardId={task.column.boardId} />
                 <AddChecklist taskId={task.id} boardId={task.column.boardId} />
                 <AddToCardDates task={task} dateType="startDate" />

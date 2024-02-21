@@ -219,3 +219,86 @@ export async function handleDeleteTaskDescription(taskId: string, boardId: strin
         return { success: false, message: 'Failed to delete description' };
     }
 }
+
+export async function handleAssignTask(data: {
+    taskId: string;
+    userId: string;
+    userName: string;
+  }) {
+    const session = await auth();
+    const currentUserId = session?.user?.id;
+  
+    if (!data.taskId || !data.userId  || !currentUserId) {
+      return {
+        success: false,
+        message: "Task ID or User ID is missing",
+      };
+    }
+  
+    try {
+      const task = await prisma.task.findUnique({
+        where: { id: data.taskId },
+        select: { assignedToId: true },
+      });
+  
+      await prisma.task.update({
+        where: { id: data.taskId },
+        data: { assignedToId: data.userId },
+      });
+  
+      // await prisma.activity.create({
+      //   data: {
+      //     type: currentUserId === data.userId ? "TASK_ASSIGNED_TO_SELF" : "TASK_ASSIGNED",
+      //     taskId: data.taskId,
+      //     userId: currentUserId,
+      //     newAssignedToId: currentUserId === data.userId ? "self" : data.userName,
+      //     oldAssignedToId: task?.assignedToId,
+      //   },
+      // });
+  
+      revalidatePath(`/task/${data.taskId}`);
+      return { success: true, message: "Task assigned successfully" };
+    } catch (e) {
+      return { success: false, message: "Failed to assign task" };
+    }
+  }
+  
+  export async function handleRemoveTaskAssignee(data: {
+    taskId: string;
+  }) {
+    const session = await auth();
+    const userId = session?.user?.id;
+  
+    if (!data.taskId  || !userId) {
+      return {
+        success: false,
+        message: "Task ID, or Board ID is missing",
+      };
+    }
+  
+    try {
+      const task = await prisma.task.findUnique({
+        where: { id: data.taskId },
+        select: { assignedToId: true },
+      });
+  
+      await prisma.task.update({
+        where: { id: data.taskId },
+        data: { assignedToId: null },
+      });
+  
+      // await prisma.activity.create({
+      //   data: {
+      //     type: "TASK_UNASSIGNED",
+      //     taskId: data.taskId,
+      //     userId: userId,
+      //     oldAssignedToId: task?.assignedToId,
+      //   },
+      // });
+  
+      revalidatePath(`/task/${data.taskId}`);
+      return { success: true, message: "Task unassigned successfully" };
+    } catch (e) {
+      return { success: false, message: "Failed to unassign task" };
+    }
+  }
