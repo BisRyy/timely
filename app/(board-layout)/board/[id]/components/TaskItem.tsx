@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { IconClock, IconFileDescription, IconGripVertical } from '@tabler/icons-react';
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import Link from 'next/link';
+// import TaskAssignee from "./TaskAssignee";
 
 interface ExtendedTask extends Task {
   labels: Label[];
@@ -31,22 +32,38 @@ export default function TaskItem({ task, dragHandleProps }: TaskItemProps) {
   };
 
   const showInfo = () => {
-    return task.description || task.startDate || task.dueDate;
+    return task.description || task.startDate || task.dueDate || task.assignedToId;
   };
 
   return (
-    <div className='bg-white flex select-none rounded-md ring-1 ring-zinc-200 hover:shadow-md ring-0 hover:ring-2 hover:ring-primary'>
-
-      <div className='pl-1 pr-1 flex items-center cursor-grab touch-none' {...dragHandleProps}>
-        <IconGripVertical className='text-primary' size={24} />
+    <div className="bg-white flex select-none rounded-md ring-1 ring-zinc-200 hover:shadow-md ring-0 hover:ring-2 hover:ring-primary">
+      <div
+        className="pl-1 pr-1 flex items-center cursor-grab touch-none"
+        {...dragHandleProps}
+      >
+        <IconGripVertical className="text-primary" size={24} />
       </div>
 
-      <Link className='flex-grow pr-3 py-2' href={`/task/${task.id}`}>
-
+      <Link className="flex-grow pr-3 py-2" href={`/task/${task.id}`}>
         {task.labels && task.labels.length > 0 && (
-          <div className='grid grid-cols-5 gap-1 w-full mb-1'>
-            {task.labels.map(label => (
-              <span key={label.id} className={`bg-${label.color}-500 text-xs h-2 w-full rounded-full`} />
+          <div className="grid grid-cols-5 gap-1 w-full mb-1">
+            {task.labels.map((label) => (
+              <span
+                key={label.id}
+                className={`text-white bg-${label.color}-500 text-xs h-5 w-full rounded-full align-middle justify-center flex p-x-2`}
+              >
+                {label.title === "Bug"
+                  ? "🐞"
+                  : label.title === "Feature"
+                  ? "🚀"
+                  : label.title === "Improvement"
+                  ? "🔧"
+                  : label.title === "Documentation"
+                  ? "📚"
+                  : label?.title && label?.title?.length > 6
+                  ? label?.title?.substring(0, 6)
+                  : label?.title}
+              </span>
             ))}
           </div>
         )}
@@ -56,18 +73,22 @@ export default function TaskItem({ task, dragHandleProps }: TaskItemProps) {
         </div>
         
         {showInfo() && (
-          <div className='flex gap-3 items-center mt-1'>
+          <div className="flex gap-3 items-center mt-1 justify-between">
+            <div className="flex gap-3 items-center mt-1">
+              {renderDateInfo() && (
+                <div className="flex items-center gap-1 text-xs text-zinc-500">
+                  <IconClock size={14} /> {renderDateInfo()}
+                </div>
+              )}
 
-            {renderDateInfo() && (
-              <div className='flex items-center gap-1 text-xs text-zinc-500'>
-                <IconClock size={14} /> {renderDateInfo()}
-              </div>
-            )}
+              {task.description && (
+                <div className="text-zinc-500">
+                  <IconFileDescription size={14} />
+                </div>
+              )}
+            </div>
 
-            {task.description && (
-              <div className='text-zinc-500'><IconFileDescription size={14} /></div>
-            )}
-
+            {/* {task.assignedToId && <TaskAssignee userID={task.assignedToId} />} */}
           </div>
         )}
 

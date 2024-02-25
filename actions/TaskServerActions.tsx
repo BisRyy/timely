@@ -220,6 +220,28 @@ export async function handleDeleteTaskDescription(taskId: string, boardId: strin
     }
 }
 
+export async function handleGetAssignee(taskId: string) {
+    try{
+        const task = await prisma.task.findUnique({
+            where: { id: taskId },
+            select: { assignedToId: true },
+        });
+    
+        if (!task?.assignedToId) {
+            return null;
+        }
+    
+        const user = await prisma.user.findUnique({
+            where: { id: task?.assignedToId || '' },
+            select: { id: true, name: true , image: true },
+        });
+    
+        return user;
+    }catch{
+        return null;
+    }
+}
+
 export async function handleAssignTask(data: {
     taskId: string;
     userId: string;

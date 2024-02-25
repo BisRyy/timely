@@ -9,7 +9,7 @@ export function Providers({children}: { children: React.ReactNode }) {
     <NextUIProvider className='flex flex-col grow'>
       <NextThemesProvider 
         attribute="class" 
-        defaultTheme="purple"
+        defaultTheme="blue"
         themes={[
           'red',
           'amber',
