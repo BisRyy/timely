@@ -63,7 +63,7 @@ export function SubMenu({ children, icon, title, defaultOpen = false }: SubMenuP
             <div className="flex items-center justify-between pl-5 h-12 cursor-pointer" onClick={toggleOpen}>
                 <div className="flex items-center">
                     <div className='w-8'>{icon && <span className='text-primary'>{icon}</span>}</div>
-                    <span className='text-sm whitespace-nowrap overflow-ellipsis block overflow-x-hidden'>{title}</span>
+                    <span className='text-lg whitespace-nowrap overflow-ellipsis block overflow-x-hidden'>{title}</span>
                 </div>
                 <button className="shrink-0 p-3">
                     <motion.div
@@ -100,7 +100,7 @@ export function MenuItem({ path, icon, title, className = "" }: MenuItemProps) {
         <li className="menu-item group">
             <Link href={path} className={combinedClassName} onClick={handleClick}>
                 <div className='w-8 shrink-0'>{icon && <span className='text-primary group-hover:text-white'>{icon}</span>}</div>
-                <span className='text-sm whitespace-nowrap overflow-ellipsis block overflow-x-hidden'>{title}</span>
+                <span className='text-lg whitespace-nowrap overflow-ellipsis block overflow-x-hidden'>{title}</span>
             </Link>
         </li>
     );
