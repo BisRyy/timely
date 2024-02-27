@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import { Inter } from 'next/font/google'
 import Loglib from "@loglib/tracker/react";
 import { Analytics } from "@vercel/analytics/react"
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 export function generateViewport() {
   return {
     width: 'device-width',
@@ -36,6 +36,7 @@ export default function RootLayout({
             }}
         />
         <Analytics/>
+        <SpeedInsights/>
       </body>
     </html>
   )
