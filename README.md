@@ -1,4 +1,20 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Timely
+Timely is comprehensive task management web application designed to facilitate efficient task organization, assignment, tracking, and collaboration within teams or organizations.
+
+The task management system serves as a centralized platform for users to create, assign, prioritize, and monitor tasks, ensuring effective project management and workflow optimization. Its primary purpose is to streamline task management processes, enhance productivity, and improve team collaboration by providing features such as task creation, assignment, due date tracking, progress monitoring, and communication tools.
+
+## Important Documents and Links
+- [Live website](https://task.thearc.tech)
+
+- [System Requirements Document](https://docs.google.com/document/d/1rTYxRgNTZVpW4h4aP3Nxr-lczjK0rjVaKvt7FAQbNYo/edit?usp=sharing)
+
+- [System Design Document](https://docs.google.com/document/d/1clAEO7TsbToT7P--Wd2B1eGHCl_JWfyZvAi-Hugc9e8/edit?usp=sharing)
+
+- [User Interface Design](https://www.figma.com/file/ODgHEzMrPy67yLTthphwNT/Timely---Task-Management-System?type=design&node-id=0%3A1&mode=design&t=P4GLk9fUtJynRcZ1-1)
+
+- [Software Testing and Quality Assurance](https://docs.google.com/document/d/1qPcSxKjMxjceWqE9CutCcPI1hlWh1MG-9pBpwWzgxzk/edit?usp=sharing)
+
+- [User Documentation Manual](https://docs.google.com/document/d/1wyD5pFXpIl0kVHvaZyFnDELNIHgUHLQpRKP66sEOwrg/edit?usp=sharing)
 
 ## Getting Started
 
