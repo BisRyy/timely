@@ -2,6 +2,7 @@ import './globals.css'
 import { Providers } from './providers'
 import { Toaster } from 'react-hot-toast'
 import { Inter } from 'next/font/google'
+import Loglib from "@loglib/tracker/react";
 
 export function generateViewport() {
   return {
@@ -28,6 +29,11 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <Loglib
+            config={{
+                id: "timely",
+            }}
+        />
       </body>
     </html>
   )
