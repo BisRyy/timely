@@ -3,6 +3,7 @@ import { Providers } from './providers'
 import { Toaster } from 'react-hot-toast'
 import { Inter } from 'next/font/google'
 import Loglib from "@loglib/tracker/react";
+import { Analytics } from "@vercel/analytics/react"
 
 export function generateViewport() {
   return {
@@ -34,6 +35,7 @@ export default function RootLayout({
                 id: "timely",
             }}
         />
+        <Analytics/>
       </body>
     </html>
   )
