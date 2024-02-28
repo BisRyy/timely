@@ -5,7 +5,7 @@ import { Button } from "@nextui-org/react";
 const SignInButton = () => {
   return (
     <Button
-      onClick={() => signIn("github", { callbackUrl: "/board" })}
+      onClick={() => signIn("credentials", { callbackUrl: "/board", username: "bisrat.kebere@a2sv.org", password: "password" })}
       type="button"
       variant="ghost"
       className="w-full"

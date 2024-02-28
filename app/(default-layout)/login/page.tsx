@@ -27,8 +27,8 @@ export default async function CustomSignInPage() {
           <CardBody className="space-y-3 p-10 pt-0">
             <h2 className="text-center text-2xl">Sign in</h2>
             <p className="text-center text-lg">with your account</p>
-            <Input placeholder="Email" />
-            <Input placeholder="Password" type="password" />
+            <Input placeholder="Email" value="bisrat.kebere@a2sv.org"/>
+            <Input placeholder="Password" type="password" value="password"/>
             <SignInButton />
             <p className="uppercase text-xs text-center text-primary">
               - or -{" "}
