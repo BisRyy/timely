@@ -79,7 +79,7 @@ export default function AssignTask({
         fullWidth
         onChange={handleUserSelect}
         items={members}
-        label="Assigned to"
+        label="Assign to"
         className="max-w-xs"
         variant="bordered"
         classNames={{
