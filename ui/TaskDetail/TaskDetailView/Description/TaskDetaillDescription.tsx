@@ -10,6 +10,7 @@ import { ExpandedTask, TaskEditData } from "@/types/types";
 import {
   handleEditTask,
   handleDeleteTaskDescription,
+  handleGenerateDescriptionWithAI,
 } from "@/actions/TaskServerActions";
 
 import { Textarea } from "@nextui-org/input";
@@ -17,12 +18,6 @@ import { Button } from "@nextui-org/button";
 import { IconTextPlus, IconLoader2 } from "@tabler/icons-react";
 import TaskDetailItemHeading from "../ui/TaskDetailItemHeading";
 import TaskDetailItemContent from "../ui/TaskDetailItemContent";
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextResponse } from "next/server";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export default function TaskDetailDescription({
   selectedTask,
@@ -80,14 +75,12 @@ export default function TaskDetailDescription({
 
   const handleGenerateDescription = async () => {
     setIsGenerating(true);
-    // Generate description with AI
-    try {
-      const result = await model.generateContent("Explain how AI works");
-
-      reset({ ...selectedTask, description: result.response.text() });
-      toast.success("Description generated successfully");
-    } catch (error) {
-      toast.error("Failed to generate description");
+    const result = await handleGenerateDescriptionWithAI(selectedTask.title);
+    if (result.success) {
+      reset({ ...selectedTask, description: result.description });
+      toast.success(result.message);
+    } else {
+      toast.error(result.message);
     }
     setIsGenerating(false);
   };
