@@ -91,11 +91,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-env:
-  NEXT_PUBLIC_URL: https://task.bisry.me
-  UNSPLASH_ACCESS_KEY: FRoM78-nmh3vVx1wrTdMoQtgnCGKkSN0921I9ICtFf4
-  AUTH_SECRET: secret
-  GITHUB_ID: Iv1.e3d8b1ff0d028c71
-  GITHUB_SECRET: 4badae3393e93b65168c167e277b195a99c6d03a
-  DATABASE_URL: postgres://default:HVTUuN3BOCm7@ep-wandering-sea-08714989-pooler.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require&pgbouncer=true&connect_timeout=15
