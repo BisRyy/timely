@@ -377,7 +377,7 @@ export async function handleRemoveTaskAssignee(data: { taskId: string }) {
 export async function handleGenerateDescriptionWithAI(taskTitle: string) {
   try {
     // Generate description with AI
-    const result = await model.generateContent(taskTitle);
+    const result = await model.generateContent(`Write a paragraph description for a task titled "${taskTitle}"`);``
     console.log(taskTitle, result.response.text());
 
     return {
