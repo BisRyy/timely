@@ -377,8 +377,13 @@ export async function handleRemoveTaskAssignee(data: { taskId: string }) {
 export async function handleGenerateDescriptionWithAI(taskTitle: string) {
   try {
     // Generate description with AI
-    const result = await model.generateContent(`Write a paragraph description for a task titled "${taskTitle}"`);``
+    const result = await model.generateContent(
+      `Write a paragraph description for a task titled "${taskTitle}"`
+    );
+    ``;
     console.log(taskTitle, result.response.text());
+
+    revalidatePath(`/task/${taskTitle}`);
 
     return {
       success: true,
@@ -387,5 +392,49 @@ export async function handleGenerateDescriptionWithAI(taskTitle: string) {
     };
   } catch (e) {
     return { success: false, message: "Failed to generate description." };
+  }
+}
+
+export async function handleGenerateTasksWithAI(
+  boardId: string,
+  project: string,
+  taskCount: number,
+  projectDescription: string
+) {
+  try {
+    // Generate description with AI
+    const result = await fetch(`http://localhost:3000/api/gemini/json`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: ` You are a helpful project manager. Create ${taskCount} tasks for the project with the following details: ${projectDescription}. Here is the project current info: ${project}`,
+      }),
+    });
+
+    const { response } = await result.json();
+
+    console.log(result);
+
+    response.forEach(async (task: any) => {
+      await handleCreateTask({
+        taskTitle: task.taskTitle,
+        description: task.description,
+        boardId: task.boardId,
+        columnId: task.columnId,
+      });
+    });
+
+    revalidatePath(`/board/${boardId}`);
+
+    return {
+      success: true,
+      description: response,
+      message: "Tasks generated successfully.",
+    };
+  } catch (e) {
+    console.log(e);
+    return { success: false, message: "Failed to generate tasks." };
   }
 }
