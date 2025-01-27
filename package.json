@@ -24,6 +24,7 @@
     "@tabler/icons-react": "^2.42.0",
     "@vercel/analytics": "^1.2.2",
     "@vercel/speed-insights": "^1.0.10",
+    "clsx": "^2.1.1",
     "cypress": "^13.17.0",
     "date-fns": "^3.0.6",
     "framer-motion": "^11.0.3",
@@ -36,6 +37,8 @@
     "react-dom": "^18",
     "react-hook-form": "^7.48.2",
     "react-hot-toast": "^2.4.1",
+    "react-markdown": "^9.0.3",
+    "tailwind-merge": "^2.6.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
