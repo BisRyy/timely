@@ -23,6 +23,12 @@ interface AnalysisRequest {
   boardId: string;
 }
 
+interface AnalysisOption {
+  value: "chat" | "risk" | "full";
+  label: string;
+  description: string;
+}
+
 export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -31,6 +37,29 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
   >([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisType, setAnalysisType] = useState<"chat" | "risk" | "full">(
+    "chat"
+  );
+
+  const analysisOptions: AnalysisOption[] = [
+    {
+      value: "chat",
+      label: "Normal Chat",
+      description: "Have a general conversation about the project",
+    },
+    {
+      value: "risk",
+      label: "Risk Assessment",
+      description:
+        "Ask specific questions about project risks and mitigation strategies",
+    },
+    {
+      value: "full",
+      label: "Full Analysis",
+      description:
+        "Ask for comprehensive project analysis including timeline, resources, and dependencies",
+    },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +77,8 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
         body: JSON.stringify({
           prompt: userMessage,
           boardId,
+          analysisType: analysisType !== "chat" ? analysisType : undefined,
+          messages: messages.slice(-5),
         }),
       });
 
@@ -145,25 +176,31 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
             </div>
           </div>
 
-          <div className="p-2 border-b flex gap-2">
-            <Button
-              color="warning"
-              variant="flat"
-              size="sm"
-              onClick={() => handleAnalysis("risk")}
-              isDisabled={isLoading}
-            >
-              Risk Assessment
-            </Button>
-            <Button
-              color="primary"
-              variant="flat"
-              size="sm"
-              onClick={() => handleAnalysis("full")}
-              isDisabled={isLoading}
-            >
-              Full Analysis
-            </Button>
+          <div className="p-2 border-b space-y-2">
+            <div className="flex gap-2">
+              {analysisOptions.map((option) => (
+                <Button
+                  key={option.value}
+                  color={analysisType === option.value ? "primary" : "default"}
+                  variant={analysisType === option.value ? "solid" : "flat"}
+                  className={cn(
+                    "flex-1 h-auto py-2",
+                    analysisType === option.value
+                      ? "border-primary"
+                      : "hover:bg-default-100"
+                  )}
+                  onClick={() => setAnalysisType(option.value)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
+            <div className="text-sm text-gray-500">
+              {
+                analysisOptions.find((opt) => opt.value === analysisType)
+                  ?.description
+              }
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
