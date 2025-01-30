@@ -1,92 +1,47 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
-import prisma from "@/db/prisma";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
-export async function POST(req: Request) {
+const schema = {
+  description: "List of Actions",
+  type: SchemaType.ARRAY,
+  items: {
+    type: SchemaType.OBJECT,
+    properties: {
+      taskTitle: { type: SchemaType.STRING, description: "Title" },
+      description: { type: SchemaType.STRING, description: "Description" },
+      boardId: { type: SchemaType.STRING, description: "Board ID" },
+      columnId: { type: SchemaType.STRING, description: "Column ID" },
+    },
+    required: ["taskTitle", "boardId", "columnId"],
+  },
+};
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+  generationConfig: {
+    responseMimeType: "application/json",
+    responseSchema: schema,
+  },
+});
+
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const { prompt, boardId, analysisType, messages = [] } = body;
-
-    const board = await prisma.board.findUnique({
-      where: { id: boardId },
-      include: {
-        columns: {
-          include: {
-            tasks: true,
-          },
-        },
-      },
-    });
-
-    if (!board) {
-      return new NextResponse("Board not found", { status: 404 });
-    }
-
-    const boardContext = {
-      title: board.title,
-      columns: board.columns.map((column) => ({
-        title: column.title,
-        tasks: column.tasks.map((task) => ({
-          title: task.title,
-          description: task.description,
-        })),
-      })),
-    };
-
-    let systemPrompt = `
-      You are a project management assistant specialized in risk assessment and project analysis.
-      Current board context:
-      ${JSON.stringify(boardContext, null, 2)}
-
-      Previous conversation context:
-      ${messages
-        .map(
-          (m: { role: string; content: string }) => `${m.role}: ${m.content}`
-        )
-        .join("\n")}
-
-      Current mode: ${analysisType || "chat"}
-    `;
-
-    if (analysisType === "risk") {
-      systemPrompt += `
-        Focus on providing risk assessment analysis with:
-        - Risk identification and classification
-        - Impact analysis
-        - Probability assessment
-        - Mitigation strategies
-        - Contingency plans
-        Format responses using markdown for better readability.
-      `;
-    } else if (analysisType === "full") {
-      systemPrompt += `
-        Focus on providing comprehensive project analysis including:
-        - Timeline assessment and milestones
-        - Resource allocation and requirements
-        - Task dependencies and critical path
-        - Risk assessment overview
-        - Overall project health and recommendations
-        Format responses using markdown for better readability.
-      `;
-    } else {
-      systemPrompt += `
-        Provide conversational assistance while keeping in mind the project context.
-        Be helpful and specific in your responses, referring to actual tasks and columns when relevant.
-      `;
-    }
-
-    systemPrompt += `\nUser's current message: ${prompt}`;
-
-    const result = await model.generateContent(systemPrompt);
-    const response = result.response.text();
-
-    return NextResponse.json({ response });
+    const { prompt } = await request.json().catch(() => ({}));
+    console.log(prompt, "prompt", process.env.GEMINI_API_KEY);
+    const result = await model.generateContent(
+      prompt ||
+        "Create 2 tasks for the board 'Computer Security Assignment' with the following details: 1. Task title: Poo, Description: This task, titled 'Poo,' involves the meticulous cleaning and sanitization of a designated area contaminated with fecal matter.  This includes the safe removal and disposal of waste, thorough disinfection of affected surfaces using appropriate cleaning agents, and the proper disposal of all contaminated materials according to established hygiene protocols.  The goal is to restore the area to a safe and sanitary condition, eliminating all traces of fecal matter and associated odors.  Appropriate personal protective equipment (PPE) must be worn throughout the process. 2. Task title: Banana"
+    );
+    console.log(result, "result");
+    return NextResponse.json({ response: JSON.parse(result.response.text()) });
   } catch (error) {
-    console.error("[GEMINI_ERROR]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    console.log(error, "error");
+    return NextResponse.json(
+      { error: "Failed to generate content" },
+      { status: 500 }
+    );
   }
 }
 
