@@ -80,6 +80,7 @@ export type TaskCreationData = {
     description?: Task['description'];
     boardId: Board['id'];
     columnId: Column['id'];
+    timeEstimate?: Task['timeEstimate'];
 };
 
 export type TaskEditData = {
@@ -87,12 +88,14 @@ export type TaskEditData = {
     title: Task['title'];
     description?: Task['description'];
     boardId: Board['id'];
+    timeEstimate?: Task['timeEstimate'];
 };
 
 export type TaskDeletionData = {
     id: Task['id'];
     boardId: Board['id'];
     columnId: Column['id'];
+    timeEstimate?: Task['timeEstimate'];
 };
 
 export type ActivityCreationData = {

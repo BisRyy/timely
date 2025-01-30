@@ -1,12 +1,20 @@
-import { Task, Label } from '@prisma/client';
-import { format } from 'date-fns';
-import { IconClock, IconFileDescription, IconGripVertical } from '@tabler/icons-react';
-import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
-import Link from 'next/link';
+import { Task, Label, User } from "@prisma/client";
+import { format } from "date-fns";
+import {
+  IconClock,
+  IconClock12,
+  IconFileDescription,
+  IconGripVertical,
+} from "@tabler/icons-react";
+import { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
+import Link from "next/link";
+import TaskAssignee from "./TaskAssignee";
+import { Avatar } from "@nextui-org/react";
 // import TaskAssignee from "./TaskAssignee";
 
 interface ExtendedTask extends Task {
   labels: Label[];
+  assignedTo: User | null;
 }
 
 interface TaskItemProps {
@@ -15,10 +23,13 @@ interface TaskItemProps {
 }
 
 export default function TaskItem({ task, dragHandleProps }: TaskItemProps) {
-
   const renderDateInfo = () => {
-    const startDate = task.startDate ? format(new Date(task.startDate), 'd MMM') : null;
-    const dueDate = task.dueDate ? format(new Date(task.dueDate), 'd MMM') : null;
+    const startDate = task.startDate
+      ? format(new Date(task.startDate), "d MMM")
+      : null;
+    const dueDate = task.dueDate
+      ? format(new Date(task.dueDate), "d MMM")
+      : null;
 
     if (startDate && dueDate) {
       return `${startDate} - ${dueDate}`;
@@ -32,11 +43,17 @@ export default function TaskItem({ task, dragHandleProps }: TaskItemProps) {
   };
 
   const showInfo = () => {
-    return task.description || task.startDate || task.dueDate || task.assignedToId;
+    return (
+      task.description ||
+      task.startDate ||
+      task.dueDate ||
+      task.assignedToId ||
+      task.timeEstimate
+    );
   };
 
   return (
-    <div className="bg-white flex select-none rounded-md ring-1 ring-zinc-200 hover:shadow-md ring-0 hover:ring-2 hover:ring-primary">
+    <div className="bg-white flex select-none rounded-md ring-1 ring-zinc-200 hover:shadow-md hover:ring-2 hover:ring-primary">
       <div
         className="pl-1 pr-1 flex items-center cursor-grab touch-none"
         {...dragHandleProps}
@@ -68,10 +85,8 @@ export default function TaskItem({ task, dragHandleProps }: TaskItemProps) {
           </div>
         )}
 
-        <div className='text-sm cursor-pointer'>
-            {task.title}
-        </div>
-        
+        <div className="text-sm cursor-pointer">{task.title}</div>
+
         {showInfo() && (
           <div className="flex gap-3 items-center mt-1 justify-between">
             <div className="flex gap-3 items-center mt-1">
@@ -88,12 +103,27 @@ export default function TaskItem({ task, dragHandleProps }: TaskItemProps) {
               )}
             </div>
 
-            {/* {task.assignedToId && <TaskAssignee userID={task.assignedToId} />} */}
+            <div className="flex items-center gap-2">
+              {task.assignedTo && (
+                <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
+                  <IconClock12 size={14} />
+                  <span>{task.timeEstimate || 1} hours</span>
+                </div>
+              )}
+
+              {task.assignedToId && (
+                <div className="flex items-center">
+                  <Avatar
+                    src={task.assignedTo?.image || ""}
+                    alt={task.assignedTo?.name || "Assignee"}
+                    size="sm"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
-
       </Link>
-
     </div>
   );
 }

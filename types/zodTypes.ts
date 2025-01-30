@@ -39,6 +39,7 @@ export const CreateTaskSchema = z.object({
     description: z.union([z.string(), z.null()]).optional(),
     columnId: z.string().min(1),
     boardId: z.string().min(1),
+    timeEstimate: z.number().optional(),
 });
 
 export const EditTaskSchema = z.object({
@@ -46,12 +47,14 @@ export const EditTaskSchema = z.object({
     boardId: z.string().min(1),
     title: z.string().min(1).optional(), 
     description: z.union([z.string(), z.null()]).optional(),
+    timeEstimate: z.number().optional(),
 });
 
 export const DeleteTaskSchema = z.object({
     id: z.string().min(1),
     columnId: z.string().min(1),
     boardId: z.string().min(1),
+    timeEstimate: z.number().optional(),
 });
 
 

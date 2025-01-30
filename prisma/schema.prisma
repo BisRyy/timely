@@ -125,6 +125,7 @@ model Task {
   assignedTo User? @relation("AssignedToRelation", fields: [assignedToId], references: [id])
   createdByUserId String
   createdBy User @relation("CreatedByRelation", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  timeEstimate Int?
 }
 
 model Invitation {

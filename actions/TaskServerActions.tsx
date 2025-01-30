@@ -49,6 +49,7 @@ export async function handleCreateTask(data: TaskCreationData) {
         columnId: parse.data.columnId,
         order: newOrder,
         createdByUserId: userId,
+        timeEstimate: parse.data.timeEstimate || null,
       },
     });
 
@@ -89,6 +90,7 @@ export async function handleEditTask(data: TaskEditData) {
       data: {
         title: parse.data.title,
         description: parse.data.description,
+        timeEstimate: parse.data.timeEstimate || null,
       },
     });
 
@@ -423,6 +425,7 @@ export async function handleGenerateTasksWithAI(
         description: task.description,
         boardId: task.boardId,
         columnId: task.columnId,
+        timeEstimate: task.timeEstimate || null,
       });
     });
 
