@@ -1,5 +1,5 @@
 'use client';
-import { Board as BoardType, Column, Task, Label } from '@prisma/client';
+import { Board as BoardType, Column, Task, Label, User } from '@prisma/client';
 import { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import CreateColumnForm from "@/ui/Forms/CreateColumnForm";
@@ -11,6 +11,7 @@ import { FloatingChatbot } from './FloatingChatbot';
 
 type ExtendedTask = Task & {
   labels: Label[];
+  assignedTo: User | null; 
 };
 
 type ExtendedColumn = Column & {

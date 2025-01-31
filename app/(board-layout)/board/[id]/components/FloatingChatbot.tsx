@@ -13,6 +13,9 @@ import {
 } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import remarkGfm from "remark-gfm";
 
 interface FloatingChatbotProps {
   boardId: string;
@@ -24,7 +27,7 @@ interface AnalysisRequest {
 }
 
 interface AnalysisOption {
-  value: "chat" | "risk" | "full";
+  value: "chat" | "risk" | "full" | "dependencies" | "suggestions";
   label: string;
   description: string;
 }
@@ -37,21 +40,32 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
   >([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisType, setAnalysisType] = useState<"chat" | "risk" | "full">(
-    "chat"
-  );
+  const [analysisType, setAnalysisType] = useState<
+    "chat" | "risk" | "full" | "dependencies" | "suggestions"
+  >("chat");
 
   const analysisOptions: AnalysisOption[] = [
     {
       value: "chat",
-      label: "Normal Chat",
+      label: "Chat",
       description: "Have a general conversation about the project",
     },
     {
       value: "risk",
-      label: "Risk Assessment",
+      label: "Risks",
       description:
         "Ask specific questions about project risks and mitigation strategies",
+    },
+    {
+      value: "dependencies",
+      label: "Dependencies",
+      description:
+        "Analyze task relationships, dependencies, and critical path",
+    },
+    {
+      value: "suggestions",
+      label: "Suggest Tasks",
+      description: "Get AI suggestions for new tasks to improve the project",
     },
     {
       value: "full",
@@ -177,23 +191,34 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
           </div>
 
           <div className="p-2 border-b space-y-2">
-            <div className="flex gap-2">
-              {analysisOptions.map((option) => (
-                <Button
-                  key={option.value}
-                  color={analysisType === option.value ? "primary" : "default"}
-                  variant={analysisType === option.value ? "solid" : "flat"}
-                  className={cn(
-                    "flex-1 h-auto py-2",
-                    analysisType === option.value
-                      ? "border-primary"
-                      : "hover:bg-default-100"
-                  )}
-                  onClick={() => setAnalysisType(option.value)}
-                >
-                  {option.label}
-                </Button>
-              ))}
+            <div
+              className={cn(
+                "flex gap-2",
+                !isFullScreen && "overflow-x-auto pb-2 hide-scrollbar"
+              )}
+            >
+              <div className={cn("flex gap-2", !isFullScreen && "w-max")}>
+                {analysisOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    color={
+                      analysisType === option.value ? "primary" : "default"
+                    }
+                    variant={analysisType === option.value ? "solid" : "flat"}
+                    className={cn(
+                      "h-auto py-2",
+                      !isFullScreen && "min-w-[120px]",
+                      isFullScreen && "flex-1",
+                      analysisType === option.value
+                        ? "border-primary"
+                        : "hover:bg-default-100"
+                    )}
+                    onClick={() => setAnalysisType(option.value)}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
             </div>
             <div className="text-sm text-gray-500">
               {
@@ -208,14 +233,44 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
               <div
                 key={index}
                 className={cn(
-                  "p-3 rounded-lg prose prose-sm max-w-none",
+                  "p-3 rounded-lg prose prose-sm max-w-none dark:prose-invert",
                   message.role === "user"
                     ? "bg-primary-100 ml-auto max-w-[80%]"
                     : "bg-gray-100 mr-auto max-w-[80%]"
                 )}
               >
                 {message.role === "assistant" ? (
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      table: ({ children }) => (
+                        <div className="overflow-x-auto">
+                          <table className="border-collapse border border-gray-300 my-2">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      th: ({ children }) => (
+                        <th className="border border-gray-300 px-4 py-2 bg-gray-100">
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td className="border border-gray-300 px-4 py-2">
+                          {children}
+                        </td>
+                      ),
+                      code: ({ className, children, ...props }) => {
+                        return (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
                 ) : (
                   message.content
                 )}
