@@ -67,6 +67,7 @@ export async function PUT(request, { params }) {
             },
         });
     } catch (error) {
+        console.log(error)
         // Return error response
         return new Response(JSON.stringify({ error: "An error occurred updating the board." }), {
             status: 500,

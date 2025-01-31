@@ -13,6 +13,14 @@ const schema = {
       description: { type: SchemaType.STRING, description: "Description" },
       boardId: { type: SchemaType.STRING, description: "Board ID" },
       columnId: { type: SchemaType.STRING, description: "Column ID" },
+      priority: {
+        type: SchemaType.STRING,
+        description: "Priority as hight, mediup or low",
+      },
+      estimatedTime: {
+        type: SchemaType.NUMBER,
+        description: "Time to complete the task in hours",
+      },
     },
     required: ["taskTitle", "boardId", "columnId"],
   },
@@ -28,14 +36,27 @@ const model = genAI.getGenerativeModel({
 
 export async function POST(request: Request) {
   try {
-    const { prompt } = await request.json().catch(() => ({}));
-    console.log(prompt, "prompt", process.env.GEMINI_API_KEY);
+    const { prompt, board } = await request.json().catch(() => ({}));
+    let systemPrompt = `
+      You are a project management assistant specialized in task creation.
+      Make sure to use boardId and collumnId from the existing board.
+      Current board context, only use this context if the user asks for it:
+      ${JSON.stringify(board, null, 2)}
+
+      here is additiona prompt from the user:
+
+      `;
+
     const result = await model.generateContent(
-      prompt ||
+      systemPrompt + prompt ||
         "Create 2 tasks for the board 'Computer Security Assignment' with the following details: 1. Task title: Poo, Description: This task, titled 'Poo,' involves the meticulous cleaning and sanitization of a designated area contaminated with fecal matter.  This includes the safe removal and disposal of waste, thorough disinfection of affected surfaces using appropriate cleaning agents, and the proper disposal of all contaminated materials according to established hygiene protocols.  The goal is to restore the area to a safe and sanitary condition, eliminating all traces of fecal matter and associated odors.  Appropriate personal protective equipment (PPE) must be worn throughout the process. 2. Task title: Banana"
     );
     console.log(result, "result");
-    return NextResponse.json({ response: JSON.parse(result.response.text()) });
+
+    const response = JSON.parse(result.response.text());
+    console.log(response);
+
+    return NextResponse.json({ suggestions: response });
   } catch (error) {
     console.log(error, "error");
     return NextResponse.json(

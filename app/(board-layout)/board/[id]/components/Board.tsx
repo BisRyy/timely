@@ -221,7 +221,7 @@ export default function Board({ board: initialBoard }: BoardProps) {
           )}
         </Droppable>
       </DragDropContext>
-      <FloatingChatbot boardId={board.id} />
+      <FloatingChatbot boardId={board.id} columnId={board.columns[0].id} />
     </div>
   );
 }

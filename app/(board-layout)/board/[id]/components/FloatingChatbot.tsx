@@ -16,9 +16,12 @@ import { cn } from "@/lib/utils";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
+import { SuggestedTask } from "./SuggestedTask";
+import { handleCreateTask } from "@/actions/TaskServerActions";
 
 interface FloatingChatbotProps {
   boardId: string;
+  columnId?: string;
 }
 
 interface AnalysisRequest {
@@ -32,11 +35,19 @@ interface AnalysisOption {
   description: string;
 }
 
-export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
+export const FloatingChatbot = ({
+  boardId,
+  columnId,
+}: FloatingChatbotProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [messages, setMessages] = useState<
-    Array<{ role: "user" | "assistant"; content: string }>
+    Array<{
+      role: "user" | "assistant";
+      content: string;
+      analysisType: string;
+      suggestions?: any;
+    }>
   >([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +55,7 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
     "chat" | "risk" | "full" | "dependencies" | "suggestions"
   >("chat");
   const [useLocalModel, setUseLocalModel] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
 
   const analysisOptions: AnalysisOption[] = [
     {
@@ -82,26 +94,59 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
 
     const userMessage = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: userMessage, analysisType: analysisType },
+    ]);
     setIsLoading(true);
 
     try {
-      const response = await fetch(useLocalModel ? "/api/local" : "/api/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: userMessage,
-          boardId,
-          analysisType: analysisType !== "chat" ? analysisType : undefined,
-          messages: messages.slice(-5),
-        }),
-      });
+      if (analysisType === "suggestions") {
+        const response = await fetch("/api/gemini/json", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: userMessage,
+            boardId,
+          }),
+        });
 
-      const data = await response.json();
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.response },
-      ]);
+        const data = await response.json();
+        setSuggestions(data.suggestions);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Here are some suggested tasks for your project:",
+            analysisType: analysisType,
+            suggestions: data.suggestions,
+          },
+        ]);
+      } else {
+        const response = await fetch(
+          useLocalModel ? "/api/local" : "/api/gemini",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompt: userMessage,
+              boardId,
+              analysisType: analysisType !== "chat" ? analysisType : undefined,
+              messages: messages.slice(-5),
+            }),
+          }
+        );
+
+        const data = await response.json();
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data.response,
+            analysisType: analysisType,
+          },
+        ]);
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -128,12 +173,34 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
       const data = await response.json();
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.response },
+        {
+          role: "assistant",
+          content: data.response,
+          analysisType: analysisType,
+        },
       ]);
     } catch (error) {
       console.error("Error:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAddTask = async (task: any) => {
+    console.log(columnId);
+    try {
+      await handleCreateTask({
+        taskTitle: task.taskTitle,
+        description: task.description,
+        boardId: boardId,
+        columnId: columnId || "",
+        timeEstimate: parseInt(task.estimatedTime),
+      });
+
+      // Remove from suggestions
+      setSuggestions((prev) => prev.filter((t) => t.title !== task.title));
+    } catch (error) {
+      console.error("Error adding task:", error);
     }
   };
 
@@ -248,42 +315,56 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
                 )}
               >
                 {message.role === "assistant" ? (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      table: ({ children }) => (
-                        <div className="overflow-x-auto">
-                          <table className="border-collapse border border-gray-300 my-2">
+                  message.analysisType === "suggestions" &&
+                  message.suggestions.length > 0 ? (
+                    <div className="space-y-2">
+                      {message.suggestions.map((task: any, index: any) => (
+                        <SuggestedTask
+                          key={index}
+                          task={task}
+                          onAdd={handleAddTask}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        table: ({ children }) => (
+                          <div className="overflow-x-auto">
+                            <table className="border-collapse border border-gray-300 my-2">
+                              {children}
+                            </table>
+                          </div>
+                        ),
+                        th: ({ children }) => (
+                          <th className="border border-gray-300 px-4 py-2 bg-gray-100">
                             {children}
-                          </table>
-                        </div>
-                      ),
-                      th: ({ children }) => (
-                        <th className="border border-gray-300 px-4 py-2 bg-gray-100">
-                          {children}
-                        </th>
-                      ),
-                      td: ({ children }) => (
-                        <td className="border border-gray-300 px-4 py-2">
-                          {children}
-                        </td>
-                      ),
-                      code: ({ className, children, ...props }) => {
-                        return (
-                          <code className={className} {...props}>
+                          </th>
+                        ),
+                        td: ({ children }) => (
+                          <td className="border border-gray-300 px-4 py-2">
                             {children}
-                          </code>
-                        );
-                      },
-                    }}
-                  >
-                    {message.content}
-                  </ReactMarkdown>
+                          </td>
+                        ),
+                        code: ({ className, children, ...props }) => {
+                          return (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  )
                 ) : (
                   message.content
                 )}
               </div>
             ))}
+
             {isLoading && (
               <div className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg mr-auto max-w-[80%]">
                 <IconLoader2 className="h-4 w-4 animate-spin" />

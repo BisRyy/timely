@@ -40,7 +40,7 @@ export default async function BoardNavbar({ board }: { board: ExtendedBoard }) {
           <Suspense
             fallback={<IconLoader2 className="animate-spin" size={16} />}
           >
-            <BoardAI board={board} />
+            {/* <BoardAI board={board} /> */}
             {/* {JSON.stringify(board)} */}
           </Suspense>
         </div>
