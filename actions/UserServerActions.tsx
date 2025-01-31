@@ -76,7 +76,7 @@ export async function handleDeleteAccount() {
             return { success: false, message: 'Authentication required', status: 401 };
         }
 
-        await prisma.$transaction(async (prisma) => {
+        await prisma.$transaction(async (prisma: { user: { delete: (arg0: { where: { id: any; }; }) => any; }; }) => {
             await prisma.user.delete({
                 where: { id: userId },
             });
