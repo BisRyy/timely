@@ -393,7 +393,12 @@ export async function handleGenerateDescriptionWithAI(taskTitle: string) {
       message: "Description generated successfully.",
     };
   } catch (e) {
-    return { success: false, message: "Failed to generate description." };
+    console.log(e);
+
+    return {
+      success: false,
+      message: `Failed to generate description. ${JSON.stringify(e)}`,
+    };
   }
 }
 
@@ -438,6 +443,9 @@ export async function handleGenerateTasksWithAI(
     };
   } catch (e) {
     console.log(e);
-    return { success: false, message: "Failed to generate tasks." };
+    return {
+      success: false,
+      message: `Failed to generate tasks. ${JSON.stringify(e)}`,
+    };
   }
 }
