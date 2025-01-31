@@ -43,6 +43,7 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
   const [analysisType, setAnalysisType] = useState<
     "chat" | "risk" | "full" | "dependencies" | "suggestions"
   >("chat");
+  const [useLocalModel, setUseLocalModel] = useState(false);
 
   const analysisOptions: AnalysisOption[] = [
     {
@@ -85,7 +86,7 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/gemini", {
+      const response = await fetch(useLocalModel ? "/api/local" : "/api/gemini", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -166,7 +167,14 @@ export const FloatingChatbot = ({ boardId }: FloatingChatbotProps) => {
         >
           <div className="p-3 border-b flex justify-between items-center">
             <h3 className="font-semibold">Project Assistant</h3>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <Button
+                size="sm"
+                variant="flat"
+                onClick={() => setUseLocalModel(!useLocalModel)}
+              >
+                {useLocalModel ? "Using: Local" : "Using: Gemini"}
+              </Button>
               <Button
                 isIconOnly
                 variant="light"
