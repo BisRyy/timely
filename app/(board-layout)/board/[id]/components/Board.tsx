@@ -1,17 +1,22 @@
-'use client';
-import { Board as BoardType, Column, Task, Label, User } from '@prisma/client';
-import { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+"use client";
+import { Board as BoardType, Column, Task, Label, User } from "@prisma/client";
+import { useState, useEffect } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
 import CreateColumnForm from "@/ui/Forms/CreateColumnForm";
-import { Card, CardHeader, CardBody, CardFooter } from '@/ui/Card/Card';
-import TaskItem from './TaskItem';
-import CreateTaskFormSimple from '@/ui/Forms/CreateTaskFormSimple';
-import ColumnActions from './ColumnActions';
-import { FloatingChatbot } from './FloatingChatbot';
+import { Card, CardHeader, CardBody, CardFooter } from "@/ui/Card/Card";
+import TaskItem from "./TaskItem";
+import CreateTaskFormSimple from "@/ui/Forms/CreateTaskFormSimple";
+import ColumnActions from "./ColumnActions";
+import { FloatingChatbot } from "./FloatingChatbot";
 
 type ExtendedTask = Task & {
   labels: Label[];
-  assignedTo: User | null; 
+  assignedTo: User | null;
 };
 
 type ExtendedColumn = Column & {
@@ -28,90 +33,93 @@ interface BoardProps {
 
 export default function Board({ board: initialBoard }: BoardProps) {
   const [board, setBoard] = useState<ExtendedBoard>(initialBoard);
-  
+
   // Handle DnD Drag End
   const onDragEnd = async (result: DropResult) => {
     const { source, destination, type } = result;
-  
+
     if (!destination) {
       return;
     }
-  
+
     let newBoard = { ...board };
-  
+
     if (type === "COLUMN") {
       const newColumns = Array.from(board.columns);
       const [removedColumn] = newColumns.splice(source.index, 1);
       newColumns.splice(destination.index, 0, removedColumn);
-      newColumns.forEach((col, index) => col.order = index + 1);
-  
+      newColumns.forEach((col, index) => (col.order = index + 1));
+
       newBoard = {
         ...board,
-        columns: newColumns
+        columns: newColumns,
       };
     } else {
-      const sourceColumn = board.columns.find(col => col.id === source.droppableId);
-      const destColumn = board.columns.find(col => col.id === destination.droppableId);
-  
+      const sourceColumn = board.columns.find(
+        (col) => col.id === source.droppableId
+      );
+      const destColumn = board.columns.find(
+        (col) => col.id === destination.droppableId
+      );
+
       if (!sourceColumn || !destColumn) return;
-  
+
       if (source.droppableId === destination.droppableId) {
         const copiedTasks = [...sourceColumn.tasks];
         const [removed] = copiedTasks.splice(source.index, 1);
         copiedTasks.splice(destination.index, 0, removed);
-        copiedTasks.forEach((task, index) => task.order = index + 1);
-  
+        copiedTasks.forEach((task, index) => (task.order = index + 1));
+
         newBoard = {
           ...board,
-          columns: board.columns.map(col => 
-            col.id === sourceColumn.id ? {...col, tasks: copiedTasks} : col
-          )
+          columns: board.columns.map((col) =>
+            col.id === sourceColumn.id ? { ...col, tasks: copiedTasks } : col
+          ),
         };
       } else {
         const sourceTasks = [...sourceColumn.tasks];
         const destTasks = [...destColumn.tasks];
         const [removed] = sourceTasks.splice(source.index, 1);
         destTasks.splice(destination.index, 0, removed);
-  
-        sourceTasks.forEach((task, index) => task.order = index + 1);
-        destTasks.forEach((task, index) => task.order = index + 1);
-  
+
+        sourceTasks.forEach((task, index) => (task.order = index + 1));
+        destTasks.forEach((task, index) => (task.order = index + 1));
+
         newBoard = {
           ...board,
-          columns: board.columns.map(col => {
+          columns: board.columns.map((col) => {
             if (col.id === sourceColumn.id) {
-              return {...col, tasks: sourceTasks};
+              return { ...col, tasks: sourceTasks };
             } else if (col.id === destColumn.id) {
-              return {...col, tasks: destTasks};
+              return { ...col, tasks: destTasks };
             } else {
               return col;
             }
-          })
+          }),
         };
       }
     }
-  
+
     setBoard(newBoard);
-  
+
     try {
       await fetch(`/api/board/${board.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ boardData: newBoard }),
       });
-
     } catch (error) {
-      console.error('Error updating board:', error);
+      console.error("Error updating board:", error);
     }
   };
-  
+
   // Update the state when the db is changed and refetched
   useEffect(() => {
     setBoard(initialBoard);
   }, [initialBoard]);
-  
+
   return (
     <div className="z-10 flex flex-col grow">
       <DragDropContext onDragEnd={onDragEnd}>
@@ -221,7 +229,10 @@ export default function Board({ board: initialBoard }: BoardProps) {
           )}
         </Droppable>
       </DragDropContext>
-      <FloatingChatbot boardId={board.id} columnId={board.columns[0].id} />
+      <FloatingChatbot
+        boardId={board.id || ""}
+        columnId={board.columns[0]?.id || ""}
+      />
     </div>
   );
 }
